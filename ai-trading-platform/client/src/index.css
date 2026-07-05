@@ -1,0 +1,106 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --color-primary: 59 130 246;
+    --color-success: 34 197 94;
+    --color-danger: 239 68 68;
+    --color-warning: 234 179 8;
+    --color-info: 6 182 212;
+    --color-bullish: 34 197 94;
+    --color-bearish: 239 68 68;
+    --color-neutral: 107 114 128;
+  }
+}
+
+@layer utilities {
+  .text-bullish {
+    color: rgb(var(--color-bullish));
+  }
+  .text-bearish {
+    color: rgb(var(--color-bearish));
+  }
+  .text-neutral {
+    color: rgb(var(--color-neutral));
+  }
+  .bg-bullish {
+    background-color: rgb(var(--color-bullish));
+  }
+  .bg-bearish {
+    background-color: rgb(var(--color-bearish));
+  }
+  .border-bullish {
+    border-color: rgb(var(--color-bullish));
+  }
+  .border-bearish {
+    border-color: rgb(var(--color-bearish));
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgb(17 24 39);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgb(75 85 99);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(107 114 128);
+}
+
+/* Glow effects for institutional UI */
+.glow-green {
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
+}
+
+.glow-red {
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+}
+
+.glow-blue {
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+}
+
+/* Pulse animation for live data */
+@keyframes pulse-live {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.animate-pulse-live {
+  animation: pulse-live 2s infinite;
+}
+
+/* Grid pattern background */
+.grid-pattern {
+  background-image: 
+    linear-gradient(rgba(75, 85, 99, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(75, 85, 99, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Trading card style */
+.trading-card {
+  background: linear-gradient(145deg, rgb(17 24 39), rgb(30 41 59));
+  border: 1px solid rgb(51 65 85);
+  border-radius: 0.75rem;
+}
+
+/* Score badge styles */
+.score-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
