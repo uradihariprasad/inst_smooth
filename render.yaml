@@ -1,0 +1,15 @@
+services:
+  # Single Docker service — serves both API + Frontend
+  - type: web
+    name: ai-trading-platform
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    region: mumbai
+    plan: starter
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+    healthCheckPath: /api/health
+    autoDeploy: true

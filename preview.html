@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Institutional Intraday Intelligence Platform</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #030712; color: #e5e7eb; }
+    
+    .app { display: flex; height: 100vh; }
+    
+    /* Sidebar */
+    .sidebar { width: 256px; background: #111827; border-right: 1px solid #1f2937; display: flex; flex-direction: column; flex-shrink: 0; }
+    .logo { padding: 16px; border-bottom: 1px solid #1f2937; display: flex; align-items: center; gap: 12px; }
+    .logo-icon { width: 40px; height: 40px; border-radius: 8px; background: linear-gradient(135deg, #2563eb, #9333ea); display: flex; align-items: center; justify-content: center; }
+    .logo-icon svg { width: 24px; height: 24px; color: white; }
+    .logo h1 { font-size: 14px; font-weight: 700; color: white; }
+    .logo p { font-size: 11px; color: #9ca3af; }
+    
+    .nav { flex: 1; overflow-y: auto; padding: 8px; }
+    .nav-item { width: 100%; display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px; font-size: 14px; font-weight: 500; color: #9ca3af; border: none; background: none; cursor: pointer; transition: all 0.15s; }
+    .nav-item:hover { color: white; background: #1f2937; }
+    .nav-item.active { color: #60a5fa; background: rgba(37, 99, 235, 0.2); }
+    .nav-item svg { width: 20px; height: 20px; flex-shrink: 0; }
+    
+    .sidebar-footer { padding: 16px; border-top: 1px solid #1f2937; }
+    .connection { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .dot.green { background: #22c55e; }
+    .dot.red { background: #ef4444; }
+    .connection span { font-size: 12px; color: #9ca3af; }
+    
+    .btn { width: 100%; padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 600; border: none; cursor: pointer; transition: all 0.15s; }
+    .btn-green { background: #16a34a; color: white; }
+    .btn-green:hover { background: #15803d; }
+    .btn-red { background: #dc2626; color: white; }
+    .btn-red:hover { background: #b91c1c; }
+    .btn-blue { background: #2563eb; color: white; }
+    .btn-blue:hover { background: #1d4ed8; }
+    .btn-ghost { background: none; color: #9ca3af; }
+    .btn-ghost:hover { color: white; background: #1f2937; }
+    
+    .progress-section { margin-top: 12px; }
+    .progress-header { display: flex; justify-content: space-between; font-size: 12px; color: #9ca3af; margin-bottom: 6px; }
+    .progress-bar { width: 100%; height: 6px; background: #1f2937; border-radius: 3px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, #2563eb, #9333ea); border-radius: 3px; transition: width 0.5s; }
+    
+    /* Main Content */
+    .main { flex: 1; overflow-y: auto; }
+    .content { padding: 24px; max-width: 1400px; margin: 0 auto; }
+    
+    .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+    .page-header h2 { font-size: 24px; font-weight: 700; color: white; }
+    .page-header p { color: #9ca3af; margin-top: 4px; }
+    
+    /* Cards */
+    .card { background: linear-gradient(145deg, #111827, #1e293b); border: 1px solid #334155; border-radius: 12px; padding: 20px; }
+    .card h3 { font-size: 14px; font-weight: 500; color: #9ca3af; margin-bottom: 8px; }
+    
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    
+    /* Market Cards */
+    .market-card .value { font-size: 28px; font-weight: 700; }
+    .market-card .change { font-size: 14px; font-weight: 600; }
+    .green { color: #4ade80; }
+    .red { color: #f87171; }
+    .yellow { color: #facc15; }
+    .blue { color: #60a5fa; }
+    .purple { color: #c084fc; }
+    .white { color: white; }
+    .gray { color: #9ca3af; }
+    
+    /* Scanner Status */
+    .scanner-card { margin-bottom: 24px; }
+    .scanner-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .pulse { width: 12px; height: 12px; border-radius: 50%; background: #22c55e; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .scanner-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; text-align: center; }
+    .stat-value { font-size: 28px; font-weight: 700; }
+    .stat-label { font-size: 12px; color: #9ca3af; margin-top: 4px; }
+    
+    /* Market Breadth */
+    .breadth-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .breadth-label { font-size: 14px; color: #9ca3af; width: 80px; }
+    .breadth-value { font-size: 14px; font-weight: 600; width: 50px; text-align: right; }
+    .breadth-bar { flex: 1; height: 8px; background: #1f2937; border-radius: 4px; overflow: hidden; }
+    .breadth-fill { height: 100%; border-radius: 4px; transition: width 0.5s; }
+    .breadth-fill.green { background: #22c55e; }
+    .breadth-fill.red { background: #ef4444; }
+    .breadth-fill.gray { background: #6b7280; }
+    
+    /* Opportunities */
+    .opp-card { background: linear-gradient(145deg, #111827, #1e293b); border: 1px solid #334155; border-radius: 12px; padding: 20px; cursor: pointer; transition: border-color 0.15s; }
+    .opp-card:hover { border-color: #2563eb; }
+    .opp-card.bullish { background: linear-gradient(145deg, rgba(22,163,74,0.1), #111827); border-color: #166534; }
+    .opp-card.bearish { background: linear-gradient(145deg, rgba(220,38,38,0.1), #111827); border-color: #991b1b; }
+    
+    .opp-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .opp-rank { width: 48px; height: 48px; border-radius: 8px; background: linear-gradient(135deg, #2563eb, #9333ea); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; color: white; }
+    .opp-symbol { font-size: 20px; font-weight: 700; color: white; }
+    .opp-subtitle { font-size: 12px; color: #9ca3af; margin-top: 2px; }
+    
+    .badge { display: inline-flex; align-items: center; padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600; border: 1px solid; }
+    .badge.bullish { color: #4ade80; background: rgba(22,163,74,0.2); border-color: #166534; }
+    .badge.bearish { color: #f87171; background: rgba(220,38,38,0.2); border-color: #991b1b; }
+    .badge.neutral { color: #9ca3af; background: #1f2937; border-color: #374151; }
+    .badge.low { color: #4ade80; background: rgba(22,163,74,0.2); }
+    .badge.medium { color: #facc15; background: rgba(234,179,8,0.2); }
+    .badge.high { color: #f97316; background: rgba(249,115,22,0.2); }
+    
+    .opp-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .metric-label { font-size: 12px; color: #9ca3af; }
+    .metric-value { font-size: 20px; font-weight: 700; color: white; }
+    
+    .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .tag { font-size: 11px; padding: 4px 8px; background: #1f2937; color: #d1d5db; border-radius: 4px; }
+    .tag.warning { background: rgba(234,179,8,0.15); color: #fbbf24; }
+    .tag.error { background: rgba(239,68,68,0.15); color: #fca5a5; }
+    
+    /* Module Scores */
+    .module-bar { margin-bottom: 10px; }
+    .module-bar-header { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
+    .module-bar-track { width: 100%; height: 6px; background: #1f2937; border-radius: 3px; overflow: hidden; }
+    .module-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s; }
+    .module-bar-fill.green { background: #22c55e; }
+    .module-bar-fill.yellow { background: #eab308; }
+    .module-bar-fill.red { background: #ef4444; }
+    
+    /* Score Card */
+    .score-card { text-align: center; padding: 16px; }
+    .score-card .score { font-size: 48px; font-weight: 800; }
+    .score-card .suffix { font-size: 24px; }
+    .score-card .label { font-size: 13px; color: #9ca3af; margin-top: 4px; }
+    
+    /* Evidence */
+    .evidence-list { list-style: none; }
+    .evidence-list li { font-size: 13px; color: #d1d5db; padding: 6px 0; display: flex; align-items: flex-start; gap: 8px; }
+    .evidence-list li::before { content: "•"; color: #60a5fa; font-weight: bold; }
+    
+    /* Section Headers */
+    .section-title { font-size: 18px; font-weight: 600; color: white; margin-bottom: 16px; }
+    
+    /* Empty State */
+    .empty-state { text-align: center; padding: 48px 24px; }
+    .empty-state svg { width: 64px; height: 64px; color: #4b5563; margin-bottom: 16px; }
+    .empty-state p { color: #9ca3af; }
+    .empty-state .sub { font-size: 14px; color: #6b7280; margin-top: 4px; }
+    
+    /* VIX */
+    .vix-bar { width: 100%; height: 8px; background: #1f2937; border-radius: 4px; overflow: hidden; margin-top: 12px; }
+    .vix-fill { height: 100%; border-radius: 4px; }
+    
+    /* Tabs */
+    .tabs { display: flex; gap: 4px; border-bottom: 1px solid #1f2937; margin-bottom: 20px; }
+    .tab { padding: 8px 16px; font-size: 14px; font-weight: 500; color: #9ca3af; border: none; background: none; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; }
+    .tab:hover { color: white; }
+    .tab.active { color: #60a5fa; border-bottom-color: #60a5fa; }
+    
+    /* Settings */
+    .slider-row { margin-bottom: 16px; }
+    .slider-header { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 6px; }
+    .slider-header span:first-child { color: #9ca3af; }
+    .slider-header span:last-child { color: white; font-weight: 500; }
+    input[type="range"] { width: 100%; height: 8px; background: #1f2937; border-radius: 4px; appearance: none; cursor: pointer; }
+    input[type="range"]::-webkit-slider-thumb { appearance: none; width: 16px; height: 16px; background: #2563eb; border-radius: 50%; cursor: pointer; }
+    
+    input[type="number"], select { width: 100%; padding: 8px 12px; background: #1f2937; border: 1px solid #374151; border-radius: 8px; color: white; font-size: 14px; }
+    
+    .space-y-4 > * + * { margin-top: 16px; }
+    .space-y-3 > * + * { margin-top: 12px; }
+    .space-y-6 > * + * { margin-top: 24px; }
+    .mb-4 { margin-bottom: 16px; }
+    .mb-3 { margin-bottom: 12px; }
+    .mb-6 { margin-bottom: 24px; }
+    .mt-3 { margin-top: 12px; }
+    .mt-4 { margin-top: 16px; }
+    .gap-4 { gap: 16px; }
+    .flex { display: flex; }
+    .items-center { align-items: center; }
+    .justify-between { justify-content: space-between; }
+    .gap-2 { gap: 8px; }
+    .gap-3 { gap: 12px; }
+    .text-center { text-align: center; }
+    .font-medium { font-weight: 500; }
+    .font-semibold { font-weight: 600; }
+    .font-bold { font-weight: 700; }
+    .text-sm { font-size: 14px; }
+    .text-xs { font-size: 12px; }
+    .text-lg { font-size: 18px; }
+    .uppercase { text-transform: uppercase; }
+    .w-full { width: 100%; }
+    .flex-1 { flex: 1; }
+    .flex-wrap { flex-wrap: wrap; }
+    .flex-col { flex-direction: column; }
+    .space-y-2 > * + * { margin-top: 8px; }
+    .p-3 { padding: 12px; }
+    .p-4 { padding: 16px; }
+    .rounded { border-radius: 4px; }
+    .rounded-lg { border-radius: 8px; }
+    .bg-gray-800\/50 { background: rgba(31,41,55,0.5); }
+    .border { border: 1px solid #374151; }
+    .overflow-hidden { overflow: hidden; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        </div>
+        <div>
+          <h1>AI Institutional</h1>
+          <p>Intelligence Platform</p>
+        </div>
+      </div>
+      
+      <nav class="nav">
+        <button class="nav-item active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+          Dashboard
+        </button>
+        <button class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+          Top Opportunities
+        </button>
+        <button class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          Live Scanner
+        </button>
+        <button class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          Market Overview
+        </button>
+        <button class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          Option Chain
+        </button>
+        <button class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Market Breadth
+        </button>
+        <button class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          Risk Dashboard
+        </button>
+        <button class="nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          Settings
+        </button>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <div class="connection">
+          <div class="dot green"></div>
+          <span>Connected</span>
+        </div>
+        <button class="btn btn-green">Start Scanner</button>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main">
+      <div class="content space-y-6">
+        
+        <!-- Page Header -->
+        <div class="page-header">
+          <div>
+            <h2>Dashboard</h2>
+            <p class="gray">AI-powered institutional intraday intelligence</p>
+          </div>
+          <button class="btn btn-blue" style="width:auto;padding:8px 20px;">Run Scan</button>
+        </div>
+
+        <!-- Market Indices -->
+        <div class="grid-3">
+          <div class="card market-card">
+            <h3>Nifty 50</h3>
+            <div class="value green">24,117.80</div>
+            <div class="change green">+0.87%</div>
+          </div>
+          <div class="card market-card">
+            <h3>Bank Nifty</h3>
+            <div class="value green">52,340.15</div>
+            <div class="change green">+1.12%</div>
+          </div>
+          <div class="card market-card">
+            <h3>India VIX</h3>
+            <div class="value yellow">13.42</div>
+            <div class="change gray">Low Volatility</div>
+          </div>
+        </div>
+
+        <!-- Scanner Status -->
+        <div class="card scanner-card">
+          <div class="scanner-header">
+            <div class="pulse"></div>
+            <span class="white font-semibold text-lg">Scanner Active</span>
+            <span class="gray text-sm" style="margin-left:auto;">Processing: RELIANCE</span>
+          </div>
+          <div class="scanner-stats">
+            <div>
+              <div class="stat-value blue">187</div>
+              <div class="stat-label">Processed</div>
+            </div>
+            <div>
+              <div class="stat-value green">42</div>
+              <div class="stat-label">Analyzed</div>
+            </div>
+            <div>
+              <div class="stat-value red">145</div>
+              <div class="stat-label">Rejected</div>
+            </div>
+            <div>
+              <div class="stat-value purple">5</div>
+              <div class="stat-label">Ranked</div>
+            </div>
+          </div>
+          <div class="progress-section">
+            <div class="progress-header">
+              <span>processing</span>
+              <span>187 / 210</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width:89%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Market Breadth -->
+        <div class="card">
+          <h3 class="section-title" style="font-size:16px;">Market Breadth</h3>
+          <div class="breadth-row">
+            <span class="breadth-label">Advancers</span>
+            <div class="breadth-bar"><div class="breadth-fill green" style="width:62%"></div></div>
+            <span class="breadth-value green">131</span>
+          </div>
+          <div class="breadth-row">
+            <span class="breadth-label">Decliners</span>
+            <div class="breadth-bar"><div class="breadth-fill red" style="width:35%"></div></div>
+            <span class="breadth-value red">74</span>
+          </div>
+        </div>
+
+        <!-- Top Opportunities -->
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="section-title" style="margin-bottom:0;">Top Opportunities <span class="gray text-sm font-normal">(5 found)</span></h3>
+          </div>
+          
+          <div class="space-y-3">
+            <!-- Opportunity 1 -->
+            <div class="opp-card bullish">
+              <div class="opp-header">
+                <div class="flex items-center gap-3">
+                  <div class="opp-rank">#1</div>
+                  <div>
+                    <div class="opp-symbol">HDFCBANK</div>
+                    <div class="opp-subtitle">Strong breakout above previous day high with institutional participation</div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="badge bullish">BULLISH</span>
+                  <span class="badge low">low</span>
+                </div>
+              </div>
+              <div class="opp-metrics">
+                <div>
+                  <div class="metric-label">Score</div>
+                  <div class="metric-value">78</div>
+                </div>
+                <div>
+                  <div class="metric-label">Confidence</div>
+                  <div class="metric-value blue">72%</div>
+                </div>
+                <div>
+                  <div class="metric-label">Entry Zone</div>
+                  <div class="metric-value" style="font-size:14px;">1,642.50<br>1,648.20</div>
+                </div>
+                <div>
+                  <div class="metric-label">Stop Loss</div>
+                  <div class="metric-value red" style="font-size:14px;">1,628.40</div>
+                </div>
+              </div>
+              <div class="tags">
+                <span class="tag">Trend score: 82/100</span>
+                <span class="tag">Momentum score: 75/100</span>
+                <span class="tag">Favorable reward/risk: 2.4</span>
+              </div>
+            </div>
+
+            <!-- Opportunity 2 -->
+            <div class="opp-card bullish">
+              <div class="opp-header">
+                <div class="flex items-center gap-3">
+                  <div class="opp-rank">#2</div>
+                  <div>
+                    <div class="opp-symbol">INFY</div>
+                    <div class="opp-subtitle">Momentum accelerating with elevated relative volume</div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="badge bullish">BULLISH</span>
+                  <span class="badge medium">medium</span>
+                </div>
+              </div>
+              <div class="opp-metrics">
+                <div>
+                  <div class="metric-label">Score</div>
+                  <div class="metric-value">71</div>
+                </div>
+                <div>
+                  <div class="metric-label">Confidence</div>
+                  <div class="metric-value blue">65%</div>
+                </div>
+                <div>
+                  <div class="metric-label">Entry Zone</div>
+                  <div class="metric-value" style="font-size:14px;">1,587.30<br>1,594.80</div>
+                </div>
+                <div>
+                  <div class="metric-label">Stop Loss</div>
+                  <div class="metric-value red" style="font-size:14px;">1,571.60</div>
+                </div>
+              </div>
+              <div class="tags">
+                <span class="tag">Momentum score: 79/100</span>
+                <span class="tag">Relative volume: 2.1x</span>
+              </div>
+            </div>
+
+            <!-- Opportunity 3 -->
+            <div class="opp-card bearish">
+              <div class="opp-header">
+                <div class="flex items-center gap-3">
+                  <div class="opp-rank">#3</div>
+                  <div>
+                    <div class="opp-symbol">TATASTEEL</div>
+                    <div class="opp-subtitle">Breakdown below support with heavy call writing</div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="badge bearish">BEARISH</span>
+                  <span class="badge medium">medium</span>
+                </div>
+              </div>
+              <div class="opp-metrics">
+                <div>
+                  <div class="metric-label">Score</div>
+                  <div class="metric-value">68</div>
+                </div>
+                <div>
+                  <div class="metric-label">Confidence</div>
+                  <div class="metric-value blue">61%</div>
+                </div>
+                <div>
+                  <div class="metric-label">Entry Zone</div>
+                  <div class="metric-value" style="font-size:14px;">154.20<br>156.80</div>
+                </div>
+                <div>
+                  <div class="metric-label">Stop Loss</div>
+                  <div class="metric-value red" style="font-size:14px;">159.40</div>
+                </div>
+              </div>
+              <div class="tags">
+                <span class="tag warning">Elevated risk level: medium</span>
+                <span class="tag">Heavy call writing at 160</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
